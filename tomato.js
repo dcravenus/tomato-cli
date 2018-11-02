@@ -10,6 +10,8 @@ const readline = require('readline');
 const jsdom = require('jsdom');
 const {JSDOM} = jsdom;
 
+const fs = require('fs');
+const homedir = require('os').homedir();
 
 if(!argv._.length) return;
 
@@ -26,6 +28,21 @@ switch(argv._[0]) {
   case 'tue':
     tuesday();
     break;
+  case 'now':
+    break;
+}
+
+function getConfig() {
+  return new Promise((resolve, reject) => {
+    fs.readFile(homedir + '/.tomato.json', {encoding: 'utf-8'}, (err, data) => {
+      if(err) {
+        reject(err);
+      } else {
+        const config = JSON.parse(data);
+        resolve(config);
+      }
+    });
+  });
 }
 
 function listFilms() {
@@ -78,21 +95,9 @@ function openShowtimes() {
   open(showtimesUrl);
 }
 
-function tuesday() {
-  const theaters = [
-    {
-      id: 'ci0005105',
-      name: 'Sandy Movies 9'
-    },
-    {
-      id: 'ci0014244',
-      name: 'Thanksgiving Point Megaplex'
-    },
-    {
-      id: 'ci0010304',
-      name: 'Jordan Commons Megaplex'
-    }
-  ];
+async function tuesday() {
+  const config = await getConfig();
+  const theaters = config.theaters;
 
   let movies = [];
   const promises = [];
@@ -110,6 +115,8 @@ function tuesday() {
           movies.push({
             title: theaterMovie.title,
             metascore: theaterMovie.metascore,
+            mpaaRating: theaterMovie.mpaaRating,
+            runtime: theaterMovie.runtime,
             showtimes: [
               {
                 theater: theater.name,
@@ -132,15 +139,21 @@ function tuesday() {
    });
 
    movies = movies.filter((movie)=>{
-    return movie.metascore >= 60;
+    return movie.metascore >= config.minScore;
+   });
+
+   movies.sort((a, b) => {
+    return (a.metascore - b.metascore) * -1;
    });
 
    movies.forEach((movie)=>{
-    console.log(chalk.blue(movie.title) + " " + movie.metascore + " Metascore");
+    console.log(chalk.blue(movie.title));
+    console.log(movie.mpaaRating + " " + movie.runtime + " " + movie.metascore + " Metascore");
+    console.log();
     movie.showtimes.forEach((showtimesObj)=>{
       console.log(showtimesObj.theater + " " + showtimesObj.times.join(" "));
     });
-    console.log("\n");
+    console.log("\n\n");
    });
  });
 
@@ -170,7 +183,19 @@ function getTheaterData(theaterId) {
         metascore = parseInt(div.querySelector('span.metascore').textContent);
       }
 
-      movies.push({title, showtimes, metascore});
+      let mpaaRatingTag = div.querySelector('img.certimage');
+      let mpaaRating = '';
+      if(mpaaRatingTag) {
+        mpaaRating = mpaaRatingTag.title;
+      }
+
+      const runtimeTag = div.querySelector('p.cert-runtime-genre time');
+      let runtime = '';
+      if(runtimeTag) {
+        runtime = runtimeTag.textContent;
+      }
+
+      movies.push({title, showtimes, metascore, mpaaRating, runtime});
     }
 
     return movies;
