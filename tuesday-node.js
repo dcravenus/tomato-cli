@@ -24,10 +24,6 @@ module.exports = async function tuesday() {
         name: "American Fork Cinemark"
       },
       {
-        id: "ci92392901",
-        name: "AMC Classic Provo"
-      },
-      {
         id: "ci0010268",
         name: "Provo Town Centre Mall Cinemark"
       },
