@@ -4,7 +4,7 @@ const request = require('request-promise-native');
 const chalk = require('chalk');
 
 const argv = require('minimist')(process.argv.slice(2));
-const open = require('open');
+const opn = require('opn');
 const readline = require('readline');
 
 const jsdom = require('jsdom');
@@ -77,7 +77,7 @@ function queryAndOpenRT(results) {
     const idx = parseInt(resp);
     rl.close();
 
-    open(`https://www.rottentomatoes.com/${results[idx-1].url}`);
+    opn(`https://www.rottentomatoes.com/${results[idx-1].url}`);
 
     queryAndOpenRT(results);
   });
@@ -86,13 +86,13 @@ function queryAndOpenRT(results) {
 function openImdb() {
   const query = argv._[1];
   let imdbUrl = `https://www.imdb.com/find?q=${query}`;
-  open(imdbUrl);
+  opn(imdbUrl);
 }
 
 function openShowtimes() {
   const query = argv._[1];
   let showtimesUrl = `https://www.google.com/search?q=${query}+showtimes`;
-  open(showtimesUrl);
+  opn(showtimesUrl);
 }
 
 async function tuesday() {
