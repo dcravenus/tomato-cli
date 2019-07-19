@@ -4,7 +4,7 @@ const chalk = require("chalk");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
-module.exports = async function tuesday() {
+module.exports = async function tuesday(minScore = 60) {
   const config = {
     theaters: [
       {
@@ -33,7 +33,7 @@ module.exports = async function tuesday() {
       }
     ],
 
-    minScore: 60
+    minScore
   };
 
   const theaters = config.theaters;
